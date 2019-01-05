@@ -34,10 +34,10 @@
       }
     </style>
 
-    {{ $stylesheet := .Site.Data.webpack_assets.app }}
-    {{ with $stylesheet.css }}
-      <link href="{{ relURL (printf "%s%s" "dist/" .) }}" rel="stylesheet">
-    {{ end }}
+    <link href="{{ relURL "dist/css/app.css" }}" rel="stylesheet">
+    <link href="{{ relURL "dist/css/highlight.css" }}" rel="stylesheet">
+    <link href="{{ relURL "dist/css/icon.css" }}" rel="stylesheet">
+    <link href="{{ relURL "dist/css/pony.css" }}" rel="stylesheet">
 
     {{ range .Site.Params.custom_css }}
       <link rel="stylesheet" href="{{ relURL ($.Site.BaseURL) }}{{ . }}">
