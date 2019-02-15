@@ -1,5 +1,9 @@
 {{- $.Scratch.Add "index" slice -}}
 {{- range where .Site.Pages "Type" "not in" (slice "page" "json") -}}
-{{- $.Scratch.Add "index" (dict "uri" .Permalink "title" .Title "content" .Plain) -}}
+    {{- if (isset .Params "tags") -}}
+        {{- $.Scratch.Add "index" (dict "uri" .Permalink "title" .Title "content" .Plain "tags" .Params.tags "categories" .Params.tags) -}}
+    {{- else -}}
+        {{- $.Scratch.Add "index" (dict "uri" .Permalink "title" .Title "content" .Plain ) -}}
+    {{- end -}}
 {{- end -}}
 {{- $.Scratch.Get "index" | jsonify -}}
