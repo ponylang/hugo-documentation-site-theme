@@ -1,8 +1,9 @@
 {{ define "main" }}
   <article class="w-100 ph4 pb5 pb6-ns pt1 pt3-ns">
-      <div class="order-0 w-20 dn db-l doc-menu" id="doc-menu">
-        {{ partial "toc.html" . }}
-      </div>
+    <div class="order-0 w-20 dn db-l doc-menu" id="doc-menu">
+      {{ partial "search.html" }}
+      {{ partial "toc.html" . }}
+    </div>
     <div class="flex-l" id="the-body">
       {{- if or (.Params.toc) (.Site.RegularPages.Related .) -}}
       <div class="order-2 w-100 w-20-l ph5-m ph0-l mb4 sticky dn db-l" id="context-menu">
@@ -18,7 +19,7 @@
           {{- end -}}
         </div>
 
-        <div class="documentation-copy center mw7">
+        <div class="documentation-copy center mw7" id="content">
           <header class="mt4 w-100">
             <p class="f6 b helvetica tracked">
                 {{/*
@@ -36,6 +37,7 @@
             {{- .Content -}}
           </main>
         </div>
+        <div id="search-results" class="center mw7 dn"></div>
       </div>
     </div>
   </article>
