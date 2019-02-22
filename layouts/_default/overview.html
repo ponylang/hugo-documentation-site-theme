@@ -1,6 +1,7 @@
 {{ define "main" }}
   <article class="w-100 ph4 pb5 pb6-ns pt1 pt5-ns">
     <div class="order-0 w-20 dn db-l doc-menu" id="doc-menu">
+      {{ partial "search.html" }}
       {{ partial "toc.html" . }}
     </div>
     <div class="flex-l" id="the-body">
@@ -8,7 +9,7 @@
         <div class="order-0 mt4 w-100 center mw7" style="clear: both;">
           <a id="doc-menu-toggle" class="icon icon-menu" href="javascript:void(0)" onClick="hideShowDM()"></a>
         </div>
-        <div class="documentation-copy center mw7">
+        <div class="documentation-copy center mw7" id="content">
           <header class="mt4 w-100">
             <p class="f6 b helvetica tracked">
                 {{/*
@@ -35,6 +36,7 @@
       {{ end }}
     </section>
         </div>
+        <div id="search-results" class="center mw7 dn"></div>
       </div>
     </div>
   </article>

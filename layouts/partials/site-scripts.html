@@ -68,62 +68,118 @@ function toggleClass() {
 
     }
   }
+// global namespace for out stuff
+var Pony = {};
 
+// search related functionality
+Pony.Search = (function() {
+  var that = {}
+  that.lunrIndex = undefined;
+  that.pages = [];
 
-var ponySearch = undefined;
-
-function doSearch(query) {
+  that.doSearch = function(query) {
     var resultsContainer = $('#search-results');
     var contentContainer = $('#content');
-    var results = ponySearch.lunrIndex.search(query).map(function(result) {
-         console.log(result);
-         return ponySearch.pages.find(function(page) {
-           return page.uri === result.ref;
-         });
+    // execute the search
+    var results = this.lunrIndex.search(query).map(function(result) {
+      console.log(result);
+        return {
+            page: that.pages[result.ref],
+            metadata: result.matchData.metadata
+        };
     });
+
+    // prepare results DOM container
     resultsContainer.empty();
-    var resList = $("<ul>", /*{class: "TODO"}*/);
+    resultsContainer.append(
+        $("<header>", {class: "mt4 w-100"}).append(
+            $("<p>", {class: "f6 b helvetica tracked", text: "SEARCH RESULTS"}))
+    );
+    var resList = $("<ul>", {id: "search-result-list"});
+    
+    // render results
     results.slice(0, 100).forEach(function(result) {
-       var res = $("<li>");
-         res.append($("<a>", {
-           href: result.uri,
-           text: result.title
-         }));
-         resList.append(res);
+        var res = $("<li>");
+        var div = $("<div>", {class: "search-result"});
+        div.append($("<a>", {
+          href: result.page.uri,
+          text: result.page.title,
+          class: "search-result-title"
+        }));
+        var p = $("<p>", {
+            class: "search-result-summary"
+        });
+        var highlighted = that.highlightResult(result.page.summary, result.metadata);
+        p.append(highlighted);
+        div.append(p);
+        res.append(div);
+        resList.append(res);
     });
     resultsContainer.append(resList);
+
+    // toggle between content and search-results
     contentContainer.addClass("dn");
     resultsContainer.removeClass("dn");
-}
+  };
 
-function initLunr(onSuccess) {
-  $.getJSON("/index.json")
-    .done(function(index) {
-       console.log("downloaded search-index");
-       ponySearch = {};
-       ponySearch.pages = index;
-       ponySearch.lunrIndex = lunr(function() {
-         this.field("title", { boost: 10 });
-         this.field("tags", { boost: 5 });
-         this.field("categories", { boost: 5 });
-         this.field("content");
-         this.ref("uri");
+  that.highlightResult = function(text, metadata) {
+      var span = $("<span>");
+      for (var key in metadata) {
+        console.log(key);
+        var summary_metadata = metadata[key]["summary"];
+        if (summary_metadata !== undefined && summary_metadata["position"] !== undefined) {
+            var position_metadata = summary_metadata["position"];
+            var last_pos = 0;
+            summary_metadata["position"].forEach(function(elem) {
+                span.append(
+                    $("<span>", {text: text.slice(last_pos, elem[0])})
+                );
+                span.append(
+                    $("<span>", {
+                        class: "highlighted",
+                        text: text.slice(elem[0], elem[0] + elem[1])})
+                );
+                last_pos = elem[0] + elem[1];
+            });
+            span.append(
+                $("<span>", {text: text.slice(last_pos, text.length)})
+            );
+        } else {
+          span.text(text);
+        }
+      }
+      return span;
+  };
 
-         index.forEach(function (page) {
-             this.add(page)
-           },
-           this
-         );
-       });
-       onSuccess();
-    })
-    .fail(function(jqxhr, textStatus, error) {
-      var err = textStatus + ", " + error;
-      console.error("Error getting search index flie:", err);
-    });
-}
+  that.initLunr = function(onSuccess) {
+      $.getJSON("/index.json")
+        .done(function(index) {
+           console.log("downloaded search-index");
+           that.pages = index;
+           that.lunrIndex = lunr(function() {
+             this.metadataWhitelist = ['position']; // add token positions to search results for highlighting
+             this.field("title", { boost: 10 });
+             this.field("tags", { boost: 5 });
+             this.field("categories", { boost: 5 });
+             this.field("content");
+             this.field("summary", {boost: 0});
+             this.ref("i");
 
-function setUpSearchUI() {
+             index.forEach(function (page, idx) {
+                 page["i"] = idx;
+                 this.add(page)
+               },
+               this
+             );
+           });
+           onSuccess();
+        })
+        .fail(function(jqxhr, textStatus, error) {
+          var err = textStatus + ", " + error;
+          console.error("Error getting search index flie:", err);
+        });
+    }
+  that.setUpSearchUI = function() {
     $('#search-box').keyup(function() {
         var query = $(this).val();
         if (query.length < 2) {
@@ -133,17 +189,23 @@ function setUpSearchUI() {
             }
             return;
         }
-        if (ponySearch === undefined) {
-            initLunr(function () {
-              doSearch(query);
+        if (that.lunrIndex === undefined) {
+            that.initLunr(function () {
+              that.doSearch(query);
             });
         } else {
-            doSearch(query);
+            that.doSearch(query);
         }
     });
     console.log("search set up");
-}
+  }
+  return that;
+})();
+
+
+
+
 $(document).ready(function() {
-  setUpSearchUI();
+  Pony.Search.setUpSearchUI();
 });
 </script>
