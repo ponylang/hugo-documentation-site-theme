@@ -82,7 +82,7 @@ Pony.Search = (function() {
     var contentContainer = $('#content');
     // execute the search
     var results = this.lunrIndex.search(query).map(function(result) {
-      console.log(result);
+      //console.log(result);
         return {
             page: that.pages[result.ref],
             metadata: result.matchData.metadata
@@ -125,7 +125,6 @@ Pony.Search = (function() {
   that.highlightResult = function(text, metadata) {
       var span = $("<span>");
       for (var key in metadata) {
-        console.log(key);
         var summary_metadata = metadata[key]["summary"];
         if (summary_metadata !== undefined && summary_metadata["position"] !== undefined) {
             var position_metadata = summary_metadata["position"];
@@ -154,7 +153,7 @@ Pony.Search = (function() {
   that.initLunr = function(onSuccess) {
       $.getJSON("/index.json")
         .done(function(index) {
-           console.log("downloaded search-index");
+           //console.log("downloaded search-index");
            that.pages = index;
            that.lunrIndex = lunr(function() {
              this.metadataWhitelist = ['position']; // add token positions to search results for highlighting
@@ -176,7 +175,7 @@ Pony.Search = (function() {
         })
         .fail(function(jqxhr, textStatus, error) {
           var err = textStatus + ", " + error;
-          console.error("Error getting search index flie:", err);
+          console.error("Error getting search index file:", err);
         });
     }
   that.setUpSearchUI = function() {
@@ -197,7 +196,6 @@ Pony.Search = (function() {
             that.doSearch(query);
         }
     });
-    console.log("search set up");
   }
   return that;
 })();
